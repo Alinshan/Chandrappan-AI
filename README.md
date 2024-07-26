@@ -4,7 +4,7 @@
 ## ![Typing SVG](https://readme-typing-svg.herokuapp.com?font=Rockstar-ExtraBold&color=F33A6A&lines=WELCOME+TO+CHANDRAPPAN-AI+REPO)
 
 </div>
-  <div align="center">
+ 
   ![Logo](Chandrappan-AI/Chandrappan1.jpg)
 
 
