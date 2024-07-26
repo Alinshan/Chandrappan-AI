@@ -6,7 +6,9 @@
 </div>
   <div align="center">
   
-  ![alt text](https://github.com/[Alinshan]/[Chandrappan-AI]/blob/[branch]/Chandrappan1.jpg?raw=true)
+  ![Alinshan](https://github.com/[Alinshan]/[Chandrappan-AI]/blob/[branch]/Chandrappan1.jpg?raw=true)
+
+
 
   <p align="center">
 <a href="https://github.com/Alinshan"><img title="Author" src="https://img.shields.io/badge/AUTHOR-ALINSHAN-grey%2Fblue?color=blue&style=for-the-badge&logo=whatsapp">
