@@ -7,7 +7,7 @@
   <div align="center">
   
 <div align="center">
-![image](images/Chandrappan1.jpg)
+![images](images/Chandrappan1.jpg)
   <p align="center">
 <a href="https://github.com/Alinshan"><img title="Author" src="https://img.shields.io/badge/AUTHOR-ALINSHAN-grey%2Fblue?color=blue&style=for-the-badge&logo=whatsapp">
 </p>
