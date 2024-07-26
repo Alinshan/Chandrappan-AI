@@ -1,4 +1,7 @@
-# Chandrappan-AI
+----------
+<div align="center">
+  
+## ![Typing SVG](https://readme-typing-svg.herokuapp.com?font=Rockstar-ExtraBold&color=F33A6A&lines=WELCOME+TO+Chandrappan-AI+REPO)
 
 ## Developers
 <div align="center">
