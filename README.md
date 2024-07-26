@@ -5,9 +5,7 @@
 
 </div>
   <div align="center">
-  
-  ![Alinshan](https://github.com/[Alinshan]/[Chandrappan-AI]/blob/[branch]/Chandrappan1.jpg?raw=true)
-
+  ![Logo](Chandrappan-AI/Chandrappan1.jpg)
 
 
   <p align="center">
