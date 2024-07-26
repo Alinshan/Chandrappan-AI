@@ -9,7 +9,6 @@
 <div align="center">
   <p align="center">
 ![Chandrappan1](images/Chandrappan1.jpg)
- alt="GIF" width="250" height="250"/>
 </p>
   <p align="center">
 <a href="https://github.com/Alinshan"><img title="Author" src="https://img.shields.io/badge/AUTHOR-ALINSHAN-grey%2Fblue?color=blue&style=for-the-badge&logo=whatsapp">
