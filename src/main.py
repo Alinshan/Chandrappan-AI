@@ -8,10 +8,10 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWebEngineWidgets import *
 
-class Waki(QWidget):
+class Chandrappan(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Waki Browser and AI-Chat")
+        self.setWindowTitle("Chandrappan An AI Browser and AI-Chat Bot")
         self.setGeometry(QRect(0, 0, 800, 600))
 
         self.setWindowIcon(QIcon("assets/icon.png"))
@@ -368,6 +368,6 @@ class Waki(QWidget):
 
 if __name__ == "__main__":
     app = QApplication([])
-    window = Waki()
+    window = Chandrappan()
     window.show()
     app.exec_()
