@@ -25,8 +25,8 @@
 1. Clone the repository
 
 ```bash
-git clone https://github.com/Alinshan/Waki.git
-cd Waki
+git clone https://github.com/Alinshan/Chandrappan-AI.git
+cd Chandrappan-AI
 ```
 
 2. Install dependencies
