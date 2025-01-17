@@ -157,7 +157,7 @@ class Waki(QWidget):
         except Exception as e:
             return f"Error: {str(e)}"
 
-if _name_ == "_main_":
+if __name__ == "_main_":
     import sys
     app = QApplication(sys.argv)
     window = Waki()
