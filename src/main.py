@@ -1,22 +1,24 @@
 import os
-import g4f
 import requests
-import markdown2
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWebEngineWidgets import *
-
+import g4f  # Ensure you have installed this library or replace it with another library if needed.
 
 class Waki(QWidget):
-    def __init__(self):
-        super().__init__()
+    def _init_(self):
+        super()._init_()
         self.setWindowTitle("Waki Browser and AI-Chat")
-        self.setGeometry(QRect(0, 0, 800, 600))
+        self.setGeometry(QRect(100, 100, 800, 600))
 
-        self.setWindowIcon(QIcon("assets/icon.png"))
+        # Set icon
+        icon_path = "assets/icon.png"
+        if os.path.exists(icon_path):
+            self.setWindowIcon(QIcon(icon_path))
+
+        # Set custom font
         font = QFont("Roboto", 12)
-        font.setWeight(20)
         self.setFont(font)
 
         # Browser view setup
@@ -24,6 +26,7 @@ class Waki(QWidget):
 
         # Stylish URL bar
         self.url_bar = QLineEdit(self)
+        self.url_bar.setPlaceholderText("Enter URL...")
         self.url_bar.setMinimumHeight(30)
         self.url_bar.setStyleSheet("""
             QLineEdit {
@@ -38,99 +41,21 @@ class Waki(QWidget):
 
         # Stylish buttons
         self.go_btn = QPushButton("Go", self)
-        self.go_btn.setMinimumHeight(30)
-        self.go_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #27ae60;
-                color: #fff;
-                padding: 10px 20px;
-                border: none;
-                border-radius: 5px;
-                transition: background-color 0.3s ease;
-            }
-            QPushButton:hover {
-                background-color: #219d54;
-            }
-        """)
-
         self.back_btn = QPushButton("👈", self)
-        self.back_btn.setMinimumHeight(30)
-        self.back_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #e74c3c;
-                color: #fff;
-                padding: 10px 15px;
-                border: none;
-                border-radius: 5px;
-                transition: background-color 0.3s ease;
-            }
-            QPushButton:hover {
-                background-color: #c0392b;
-            }
-        """)
-
         self.forward_btn = QPushButton("👉", self)
-        self.forward_btn.setMinimumHeight(30)
-        self.forward_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #f39c12;
-                color: #fff;
-                padding: 10px 10px;
-                border: none;
-                border-radius: 5px;
-                transition: background-color 0.3s ease;
-            }
-            QPushButton:hover {
-                background-color: #d68910;
-            }
-        """)
-
         self.chat_btn = QPushButton("Chat with AI", self)
-        self.chat_btn.setMinimumHeight(30)
-        self.chat_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #3498db;
-                color: #fff;
-                padding: 10px 20px;
-                border: none;
-                border-radius: 5px;
-                transition: background-color 0.3s ease;
-            }
-            QPushButton:hover {
-                background-color: #2980b9;
-            }
-        """)
-
         self.generate_image_btn = QPushButton("Generate Image", self)
-        self.generate_image_btn.setMinimumHeight(30)
-        self.generate_image_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #e74c3c;
-                color: #fff;
-                padding: 10px 15px;
-                border: none;
-                border-radius: 5px;
-                transition: background-color 0.3s ease;
-            }
-            QPushButton:hover {
-                background-color: #c0392b;
-            }
-        """)
-
-        # Connect Generate Image button to the function
-        self.generate_image_btn.clicked.connect(self.open_image_window)
+        for btn in [self.go_btn, self.back_btn, self.forward_btn, self.chat_btn, self.generate_image_btn]:
+            btn.setMinimumHeight(30)
+            btn.setCursor(QCursor(Qt.PointingHandCursor))
 
         # Layout setup
         self.layout = QVBoxLayout(self)
         self.horizontal_layout = QHBoxLayout()
-
-        self._history = []
-
         self.horizontal_layout.addWidget(self.url_bar)
         self.horizontal_layout.addWidget(self.go_btn)
         self.horizontal_layout.addWidget(self.back_btn)
         self.horizontal_layout.addWidget(self.forward_btn)
-
         self.layout.addLayout(self.horizontal_layout)
         self.layout.addWidget(self.browser)
         self.layout.addWidget(self.chat_btn)
@@ -141,29 +66,10 @@ class Waki(QWidget):
         self.back_btn.clicked.connect(self.browser.back)
         self.forward_btn.clicked.connect(self.browser.forward)
         self.chat_btn.clicked.connect(self.open_chat_window)
+        self.generate_image_btn.clicked.connect(self.open_image_window)
 
         # Set initial URL
         self.navigate("https://google.com")
-
-    @property
-    def url(self):
-        return self.browser.url().toString()
-
-    @url.setter
-    def url(self, url):
-        self.navigate(url)
-
-    @property
-    def history(self):
-        return self._history
-
-    @property
-    def title(self):
-        return self.browser.title()
-
-    @title.setter
-    def title(self, title):
-        self.setWindowTitle(title)
 
     def navigate(self, url):
         if not url.startswith("http"):
@@ -173,188 +79,87 @@ class Waki(QWidget):
 
     def open_image_window(self):
         image_dialog = QDialog(self)
+        image_dialog.setWindowTitle("🖼 Generated Image")
         image_dialog.setMinimumSize(400, 400)
-        image_dialog.setWindowTitle("🖼️ Generated Image")
 
         input_edit = QLineEdit(image_dialog)
-        input_edit.setStyleSheet("""
-            QLineEdit {
-                background-color: #ecf0f1;
-                border: 1px solid #bdc3c7;
-                border-radius: 5px;
-                padding: 5px;
-                color: #2c3e50;
-            }
-        """)
-        input_edit.setFont(QFont("Roboto", 12, 20))
-        input_edit.setCursor(QCursor(Qt.IBeamCursor))
-
+        input_edit.setPlaceholderText("Enter image description...")
         generate_btn = QPushButton("Generate", image_dialog)
-        generate_btn.setFont(QFont("Roboto", 12, 20))
-        generate_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #e74c3c;
-                color: #fff;
-                padding: 10px 15px;
-                border: none;
-                border-radius: 5px;
-                transition: background-color 0.3s ease;
-            }
-            QPushButton:hover {
-                background-color: #c0392b;
-            }
-        """)
-        generate_btn.setCursor(QCursor(Qt.PointingHandCursor))
-        generate_btn.clicked.connect(lambda: self.generate_image(input_edit, image_dialog))
-
         label = QLabel(image_dialog)
-        path = ""
-        if not os.path.exists("assets/temp_img.png"):
-            path = "assets/placeholder.jpg"
-        else:
-            path = "assets/temp_img.png"
-        pixmap = QPixmap(path)
-        label.setPixmap(pixmap)
+        label.setAlignment(Qt.AlignCenter)
 
         layout = QVBoxLayout(image_dialog)
         layout.addWidget(input_edit)
         layout.addWidget(generate_btn)
         layout.addWidget(label)
 
+        generate_btn.clicked.connect(lambda: self.generate_image(input_edit.text(), label))
+
         image_dialog.exec_()
 
-    def generate_image(self, input_edit, dialog):
-        prompt = input_edit.text()
-        url = "https://hercai.onrender.com/prodia/text2image?prompt=" + prompt
-
+    def generate_image(self, prompt, label):
         try:
+            url = f"https://hercai.onrender.com/prodia/text2image?prompt={prompt}"
             response = requests.get(url)
-            response.raise_for_status()  # Raise error for bad responses
+            response.raise_for_status()
+            image_url = response.json().get("url")
 
-            image_url = response.json()["url"]
-
-            # Save image to assets/temp_img.png
-            with open("assets/temp_img.png", "wb") as f:
-                f.write(requests.get(image_url).content)
-
-            # Reload the image in the dialog
-            pixmap = QPixmap("assets/temp_img.png")
-            label = dialog.findChild(QLabel)
-            label.setPixmap(pixmap)
-
-        except requests.exceptions.RequestException as e:
-            print(f"Error fetching image: {e}")
-            pixmap = QPixmap("assets/placeholder.jpg")
-            label = dialog.findChild(QLabel)
-            label.setPixmap(pixmap)
+            if image_url:
+                image_data = requests.get(image_url).content
+                temp_image_path = "assets/temp_img.png"
+                with open(temp_image_path, "wb") as f:
+                    f.write(image_data)
+                pixmap = QPixmap(temp_image_path)
+                label.setPixmap(pixmap)
+            else:
+                label.setText("Failed to retrieve image URL.")
+        except Exception as e:
+            label.setText(f"Error: {str(e)}")
 
     def open_chat_window(self):
         chat_window = QDialog(self)
+        chat_window.setWindowTitle("🗣 Chat with AI")
         chat_window.setMinimumSize(400, 500)
-        chat_window.setWindowTitle("🗣️ Chat with AI")
 
         chat_output = QTextEdit(chat_window)
         chat_output.setReadOnly(True)
-        chat_output.setLineWrapMode(QTextEdit.NoWrap)
 
         input_edit = QLineEdit(chat_window)
-        input_edit.setStyleSheet("""
-            QLineEdit {
-                background-color: #ecf0f1;
-                border: 1px solid #bdc3c7;
-                border-radius: 5px;
-                padding: 5px;
-                color: #2c3e50;
-            }
-        """)
-        input_edit.setCursor(QCursor(Qt.IBeamCursor))
-        input_edit.setFont(QFont("Roboto", 12, 20))
-
-        send_btn = QPushButton("✉️ Send", chat_window)
-        send_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #3498db;
-                color: #fff;
-                padding: 10px 20px;
-                border: none;
-                border-radius: 5px;
-                transition: background-color 0.3s ease;
-            }
-            QPushButton:hover {
-                background-color: #2980b9;
-            }
-        """)
-        send_btn.setCursor(QCursor(Qt.PointingHandCursor))
-        send_btn.setFont(QFont("Roboto", 12, 20))
-
-        send_btn.clicked.connect(lambda: self.send_message(input_edit, chat_output))
+        send_btn = QPushButton("Send", chat_window)
 
         layout = QVBoxLayout(chat_window)
-        layout.addWidget(chat_output, 1)
+        layout.addWidget(chat_output)
         input_layout = QHBoxLayout()
-        input_layout.addWidget(input_edit, 1)
+        input_layout.addWidget(input_edit)
         input_layout.addWidget(send_btn)
         layout.addLayout(input_layout)
 
-        for message in self.history:
-            self.apply_styles(chat_output, message["content"], role=message["role"])
+        send_btn.clicked.connect(lambda: self.send_message(input_edit.text(), chat_output))
 
         chat_window.exec_()
 
-    def send_message(self, input_edit, chat_output):
-        prompt = input_edit.text()
+    def send_message(self, prompt, chat_output):
+        if not prompt.strip():
+            return
+        chat_output.append(f"User: {prompt}")
         ai_response = self.generate_response(prompt)
-
-        self.history.append({
-            "role": "user",
-            "content": prompt
-        })
-
-        self.history.append({
-            "role": "bot",
-            "content": ai_response
-        })
-
-        self.apply_styles(chat_output, prompt, role="user")
-        self.apply_styles(chat_output, ai_response, role="bot")
-
-        input_edit.clear()
-
-    def apply_styles(self, chat_output, message, role):
-        user_style = """
-            color: #3498db;
-        """
-        bot_style = """
-            color: #2ecc71;
-            font-size: 12px;
-        """
-
-        message = markdown2.markdown(message)
-
-        if role == "user":
-            message_style = user_style
-        elif role == "bot":
-            message_style = bot_style
-        else:
-            message_style = ""
-
-        chat_output.append(f"<span style='{message_style}'>{message}</span>")
+        chat_output.append(f"AI: {ai_response}")
 
     def generate_response(self, prompt):
-        self.history.append({
-            "role": "user",
-            "content": prompt
-        })
-        response = g4f.ChatCompletion.create(
-            model=g4f.models.llama2_70b,
-            messages=self.history,
-        )
+        try:
+            # Replace 'model' and 'provider' with actual values supported by g4f
+            response = g4f.ChatCompletion.create(
+                model='gpt-3.5-turbo',
+                provider=g4f.Provider.Aichat,
+                messages=[{'role': 'user', 'content': prompt}]
+            )
+            return response['choices'][0]['message']['content']
+        except Exception as e:
+            return f"Error: {str(e)}"
 
-        return response
-
-
-if __name__ == "__main__":
-    app = QApplication([])
+if _name_ == "_main_":
+    import sys
+    app = QApplication(sys.argv)
     window = Waki()
     window.show()
-    app.exec_()
+    sys.exit(app.exec_())
