@@ -2,11 +2,13 @@ import os
 import g4f
 import requests
 import markdown2
+from g4f.gui import run_gui  # Import the g4f GUI helper
 
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWebEngineWidgets import *
+
 
 class Waki(QWidget):
     def __init__(self):
@@ -299,8 +301,7 @@ class Waki(QWidget):
         self.url_bar.setText(url)
         self.browser.setUrl(QUrl(url))
 
+
+# Replace manual AI chat functionality with g4f's built-in GUI function
 if __name__ == "__main__":
-    app = QApplication([])
-    window = Waki()
-    window.show()
-    app.exec_()
+    run_gui()  # This will replace your manual chat interface
