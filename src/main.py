@@ -8,7 +8,7 @@ from PyQt5.QtWebEngineWidgets import *
 import markdown2
 
 # Initialize OpenAI client
-client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))  # Store API key in an environment variable
+client = openai.Client(api_key=os.getenv("OPENAI_API_KEY"))  # Correct client initialization
 
 
 class Synth(QWidget):
@@ -28,24 +28,11 @@ class Synth(QWidget):
         # URL bar
         self.url_bar = QLineEdit(self)
         self.url_bar.setMinimumHeight(30)
-        self.url_bar.setStyleSheet("""
-            QLineEdit {
-                background-color: #ecf0f1;
-                border: 1px solid #bdc3c7;
-                border-radius: 5px;
-                padding: 5px;
-                color: #2c3e50;
-            }
-        """)
 
         # Navigation Buttons
         self.go_btn = QPushButton("Go", self)
         self.back_btn = QPushButton("👈", self)
         self.forward_btn = QPushButton("👉", self)
-
-        self.go_btn.setMinimumHeight(30)
-        self.back_btn.setMinimumHeight(30)
-        self.forward_btn.setMinimumHeight(30)
 
         self.chat_btn = QPushButton("Chat with AI", self)
         self.generate_image_btn = QPushButton("Generate Image", self)
@@ -103,12 +90,13 @@ class Synth(QWidget):
         prompt = input_edit.text()
 
         try:
-            response = client.images.generate(
+            response = client.images.generate(  # Corrected image generation method
                 model="dall-e-3",
                 prompt=prompt,
                 n=1,
                 size="1024x1024"
             )
+
             image_url = response.data[0].url
 
             # Save and display the image
@@ -143,17 +131,11 @@ class Synth(QWidget):
         input_layout.addWidget(send_btn)
         layout.addLayout(input_layout)
 
-        for message in self.history:
-            self.apply_styles(chat_output, message["content"], role=message["role"])
-
         chat_window.exec_()
 
     def send_message(self, input_edit, chat_output):
         prompt = input_edit.text()
         ai_response = self.generate_response(prompt)
-
-        self.history.append({"role": "user", "content": prompt})
-        self.history.append({"role": "bot", "content": ai_response})
 
         self.apply_styles(chat_output, prompt, role="user")
         self.apply_styles(chat_output, ai_response, role="bot")
@@ -171,11 +153,9 @@ class Synth(QWidget):
         chat_output.append(f"<span style='{message_style}'>{message}</span>")
 
     def generate_response(self, prompt):
-        self.history.append({"role": "user", "content": prompt})
-
-        response = client.chat.completions.create(
+        response = client.chat.completions.create(  # Fixed method call
             model="gpt-3.5-turbo",
-            messages=self.history
+            messages=[{"role": "user", "content": prompt}]
         )
 
         return response.choices[0].message.content
