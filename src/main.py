@@ -43,99 +43,37 @@ class Synth(QWidget):
         # Stylish Go button
         self.go_btn = QPushButton("Go", self)
         self.go_btn.setMinimumHeight(30)
-        self.go_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #27ae60;
-                color: #fff;
-                padding: 10px 20px;
-                border: none;
-                border-radius: 5px;
-                transition: background-color 0.3s ease;
-            }
-            QPushButton:hover {
-                background-color: #219d54;
-            }
-        """)
         self.go_btn.setCursor(QCursor(Qt.PointingHandCursor))
 
         # Stylish navigation buttons
         self.back_btn = QPushButton("👈", self)
         self.back_btn.setMinimumHeight(30)
-        self.back_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #e74c3c;
-                color: #fff;
-                padding: 10px 15px;
-                border: none;
-                border-radius: 5px;
-                transition: background-color 0.3s ease;
-            }
-            QPushButton:hover {
-                background-color: #c0392b;
-            }
-        """)
         self.back_btn.setCursor(QCursor(Qt.PointingHandCursor))
 
         self.forward_btn = QPushButton("👉", self)
         self.forward_btn.setMinimumHeight(30)
-        self.forward_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #f39c12;
-                color: #fff;
-                padding: 10px 10px;
-                border: none;
-                border-radius: 5px;
-                transition: background-color 0.3s ease;
-            }
-            QPushButton:hover {
-                background-color: #d68910;
-            }
-        """)
         self.forward_btn.setCursor(QCursor(Qt.PointingHandCursor))
 
         # Chat with AI button
         self.chat_btn = QPushButton("Chat with AI", self)
         self.chat_btn.setMinimumHeight(30)
-        self.chat_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #3498db;
-                color: #fff;
-                padding: 10px 20px;
-                border: none;
-                border-radius: 5px;
-                transition: background-color 0.3s ease;
-            }
-            QPushButton:hover {
-                background-color: #2980b9;
-            }
-        """)
         self.chat_btn.setCursor(QCursor(Qt.PointingHandCursor))
 
         # Generate Image button
         self.generate_image_btn = QPushButton("Generate Image", self)
         self.generate_image_btn.setMinimumHeight(30)
-        self.generate_image_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #e74c3c;
-                color: #fff;
-                padding: 10px 15px;
-                border: none;
-                border-radius: 5px;
-                transition: background-color 0.3s ease;
-            }
-            QPushButton:hover {
-                background-color: #c0392b;
-            }
-        """)
         self.generate_image_btn.setCursor(QCursor(Qt.PointingHandCursor))
 
-        # Connect Generate Image button to the function
+        # Connect buttons
         self.generate_image_btn.clicked.connect(self.open_image_window)
+        self.go_btn.clicked.connect(lambda: self.navigate(self.url_bar.text()))
+        self.back_btn.clicked.connect(self.browser.back)
+        self.forward_btn.clicked.connect(self.browser.forward)
+        self.chat_btn.clicked.connect(self.open_chat_window)
 
         # Layout setup
         self.layout = QVBoxLayout(self)
         self.horizontal_layout = QHBoxLayout()
-
         self._history = []
 
         self.horizontal_layout.addWidget(self.url_bar)
@@ -148,34 +86,8 @@ class Synth(QWidget):
         self.layout.addWidget(self.chat_btn)
         self.layout.addWidget(self.generate_image_btn)
 
-        # Event connections
-        self.go_btn.clicked.connect(lambda: self.navigate(self.url_bar.text()))
-        self.back_btn.clicked.connect(self.browser.back)
-        self.forward_btn.clicked.connect(self.browser.forward)
-        self.chat_btn.clicked.connect(self.open_chat_window)
-
         # Set initial URL
         self.navigate("https://google.com")
-
-    @property
-    def url(self):
-        return self.browser.url().toString()
-
-    @url.setter
-    def url(self, url):
-        self.navigate(url)
-
-    @property
-    def history(self):
-        return self._history
-
-    @property
-    def title(self):
-        return self.browser.title()
-
-    @title.setter
-    def title(self, title):
-        self.setWindowTitle(title)
 
     def navigate(self, url):
         if not url.startswith("http"):
@@ -185,80 +97,54 @@ class Synth(QWidget):
 
     def open_image_window(self):
         # Open a dialog to display the image
-        image_dialog = QDialog(self)
-        image_dialog.setMinimumSize(400, 400)
-        image_dialog.setWindowTitle("🖼️ Generated Image")
+        self.image_dialog = QDialog(self)
+        self.image_dialog.setMinimumSize(400, 400)
+        self.image_dialog.setWindowTitle("🖼️ Generated Image")
 
-        # Add input bar to dialog
-        input_edit = QLineEdit(image_dialog)
-        input_edit.setStyleSheet("""
-            QLineEdit {
-                background-color: #ecf0f1;
-                border: 1px solid #bdc3c7;
-                border-radius: 5px;
-                padding: 5px;
-                color: #2c3e50;
-            }
-        """)
-        input_edit.setFont(QFont("Roboto", 12, 20))
-        input_edit.setCursor(QCursor(Qt.IBeamCursor))
+        # Input field for image generation prompt
+        self.input_edit = QLineEdit(self.image_dialog)
+        self.input_edit.setFont(QFont("Roboto", 12, 20))
 
-        # Add button to generate the image
-        generate_btn = QPushButton("Generate", image_dialog)
+        # Button to generate the image
+        generate_btn = QPushButton("Generate", self.image_dialog)
         generate_btn.setFont(QFont("Roboto", 12, 20))
-        generate_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #e74c3c;
-                color: #fff;
-                padding: 10px 15px;
-                border: none;
-                border-radius: 5px;
-                transition: background-color 0.3s ease;
-            }
-            QPushButton:hover {
-                background-color: #c0392b;
-            }
-        """)
         generate_btn.setCursor(QCursor(Qt.PointingHandCursor))
-        generate_btn.clicked.connect(lambda: self.generate_image(input_edit, image_dialog))
+        generate_btn.clicked.connect(self.generate_image)
 
-        # Show <img> tag in dialog
-        label = QLabel(image_dialog)
-        path = "assets/placeholder.jpg"
-        pixmap = QPixmap(path)
-        label.setPixmap(pixmap)
+        # Label to display generated image
+        self.image_label = QLabel(self.image_dialog)
+        pixmap = QPixmap("assets/placeholder.jpg")
+        self.image_label.setPixmap(pixmap)
 
-        # Add elements to dialog
-        layout = QVBoxLayout(image_dialog)
-        layout.addWidget(input_edit)
+        # Layout
+        layout = QVBoxLayout(self.image_dialog)
+        layout.addWidget(self.input_edit)
         layout.addWidget(generate_btn)
-        layout.addWidget(label)
+        layout.addWidget(self.image_label)
 
-        image_dialog.exec_()
+        self.image_dialog.exec_()
 
-    def generate_image(self, input_edit, dialog):
-        prompt = input_edit.text()
+    def generate_image(self):
+        prompt = self.input_edit.text()
 
-        # Replace this with OpenAI's DALL·E API call
-        openai.api_key = ''  # Set your OpenAI API key here
+        openai.api_key = os.getenv("OPENAI_API_KEY")  # Use env variable for security
 
         try:
             response = openai.Image.create(
                 prompt=prompt,
                 n=1,
-                size="512x512"  # Adjust size as per your needs
+                size="512x512"
             )
             image_url = response['data'][0]['url']
 
-            # Save the image to assets/temp_img.png
+            # Save image
             img_data = requests.get(image_url).content
             with open("assets/temp_img.png", "wb") as f:
                 f.write(img_data)
 
-            # Reload the image in the dialog
+            # Update image in the dialog
             pixmap = QPixmap("assets/temp_img.png")
-            label = dialog.findChild(QLabel)
-            label.setPixmap(pixmap)
+            self.image_label.setPixmap(pixmap)
 
         except Exception as e:
             print(f"Error generating image: {e}")
@@ -270,38 +156,13 @@ class Synth(QWidget):
 
         chat_output = QTextEdit(chat_window)
         chat_output.setReadOnly(True)
-        chat_output.setLineWrapMode(QTextEdit.NoWrap)
 
         input_edit = QLineEdit(chat_window)
-        input_edit.setStyleSheet("""
-            QLineEdit {
-                background-color: #ecf0f1;
-                border: 1px solid #bdc3c7;
-                border-radius: 5px;
-                padding: 5px;
-                color: #2c3e50;
-            }
-        """)
-        input_edit.setCursor(QCursor(Qt.IBeamCursor))
         input_edit.setFont(QFont("Roboto", 12, 20))
 
         send_btn = QPushButton("✉️ Send", chat_window)
-        send_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #3498db;
-                color: #fff;
-                padding: 10px 20px;
-                border: none;
-                border-radius: 5px;
-                transition: background-color 0.3s ease;
-            }
-            QPushButton:hover {
-                background-color: #2980b9;
-            }
-        """)
         send_btn.setCursor(QCursor(Qt.PointingHandCursor))
         send_btn.setFont(QFont("Roboto", 12, 20))
-
         send_btn.clicked.connect(lambda: self.send_message(input_edit, chat_output))
 
         layout = QVBoxLayout(chat_window)
@@ -321,15 +182,8 @@ class Synth(QWidget):
         prompt = input_edit.text()
         ai_response = self.generate_response(prompt)
 
-        self.history.append({
-            "role": "user",
-            "content": prompt
-        })
-
-        self.history.append({
-            "role": "bot",
-            "content": ai_response
-        })
+        self.history.append({"role": "user", "content": prompt})
+        self.history.append({"role": "bot", "content": ai_response})
 
         self.apply_styles(chat_output, prompt, role="user")
         self.apply_styles(chat_output, ai_response, role="bot")
@@ -342,26 +196,19 @@ class Synth(QWidget):
         
         message = markdown2.markdown(message)
 
-        if role == "user":
-            message_style = user_style
-        elif role == "bot":
-            message_style = bot_style
-        else:
-            message_style = ""
-
+        message_style = user_style if role == "user" else bot_style
         chat_output.append(f"<span style='{message_style}'>{message}</span>")
 
     def generate_response(self, prompt):
-        self.history.append({
-            "role": "user",
-            "content": prompt
-        })
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=self.history,
-        )
-
-        return response['choices'][0]['message']['content']
+        try:
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=[{"role": "user", "content": prompt}],
+            )
+            return response['choices'][0]['message']['content']
+        except Exception as e:
+            print(f"Error generating response: {e}")
+            return "Error: Unable to fetch response."
 
 if __name__ == "__main__":
     app = QApplication([])
