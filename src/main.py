@@ -7,9 +7,13 @@ from PyQt5.QtCore import *
 from PyQt5.QtWebEngineWidgets import *
 import markdown2
 
-# Initialize OpenAI client
-client = openai.Client(api_key=os.getenv("OPENAI_API_KEY"))  # Correct client initialization
+# Ensure OpenAI API key is set
+api_key = os.getenv("OPENAI_API_KEY")
+if not api_key:
+    raise ValueError("OPENAI_API_KEY environment variable is not set.")
 
+# Initialize OpenAI client
+client = openai.OpenAI(api_key=api_key)
 
 class Synth(QWidget):
     def __init__(self):
@@ -19,7 +23,6 @@ class Synth(QWidget):
         self.setWindowIcon(QIcon("assets/icon.png"))
 
         font = QFont("Roboto", 12)
-        font.setWeight(20)
         self.setFont(font)
 
         # Browser view setup
@@ -27,21 +30,18 @@ class Synth(QWidget):
 
         # URL bar
         self.url_bar = QLineEdit(self)
-        self.url_bar.setMinimumHeight(30)
+        self.url_bar.setPlaceholderText("Enter URL...")
 
         # Navigation Buttons
         self.go_btn = QPushButton("Go", self)
         self.back_btn = QPushButton("👈", self)
         self.forward_btn = QPushButton("👉", self)
-
         self.chat_btn = QPushButton("Chat with AI", self)
         self.generate_image_btn = QPushButton("Generate Image", self)
 
         # Layout setup
         self.layout = QVBoxLayout(self)
         self.horizontal_layout = QHBoxLayout()
-
-        self._history = []
 
         self.horizontal_layout.addWidget(self.url_bar)
         self.horizontal_layout.addWidget(self.go_btn)
@@ -65,105 +65,83 @@ class Synth(QWidget):
     def navigate(self, url):
         if not url.startswith("http"):
             url = "http://" + url
-        self.url_bar.setText(url)
         self.browser.setUrl(QUrl(url))
 
     def open_image_window(self):
-        image_dialog = QDialog(self)
-        image_dialog.setMinimumSize(400, 400)
-        image_dialog.setWindowTitle("🖼️ Generated Image")
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Generate Image")
+        dialog.setMinimumSize(400, 400)
 
-        input_edit = QLineEdit(image_dialog)
-        generate_btn = QPushButton("Generate", image_dialog)
-        label = QLabel(image_dialog)
+        input_edit = QLineEdit(dialog)
+        input_edit.setPlaceholderText("Enter image description")
+        generate_btn = QPushButton("Generate", dialog)
+        label = QLabel(dialog)
 
-        layout = QVBoxLayout(image_dialog)
+        layout = QVBoxLayout(dialog)
         layout.addWidget(input_edit)
         layout.addWidget(generate_btn)
         layout.addWidget(label)
 
-        generate_btn.clicked.connect(lambda: self.generate_image(input_edit, label))
+        generate_btn.clicked.connect(lambda: self.generate_image(input_edit.text(), label))
+        dialog.exec_()
 
-        image_dialog.exec_()
-
-    def generate_image(self, input_edit, label):
-        prompt = input_edit.text()
-
+    def generate_image(self, prompt, label):
         try:
-            response = client.images.generate(  # Corrected image generation method
+            response = client.images.generate(
                 model="dall-e-3",
                 prompt=prompt,
                 n=1,
                 size="1024x1024"
             )
-
             image_url = response.data[0].url
 
-            # Save and display the image
             img_data = requests.get(image_url).content
-            with open("assets/temp_img.png", "wb") as f:
+            with open("assets/generated_image.png", "wb") as f:
                 f.write(img_data)
 
-            pixmap = QPixmap("assets/temp_img.png")
+            pixmap = QPixmap("assets/generated_image.png")
             label.setPixmap(pixmap)
-
         except Exception as e:
-            print(f"Error generating image: {e}")
+            QMessageBox.critical(self, "Error", f"Failed to generate image: {e}")
 
     def open_chat_window(self):
-        chat_window = QDialog(self)
-        chat_window.setMinimumSize(400, 500)
-        chat_window.setWindowTitle("🗣️ Chat with AI")
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Chat with AI")
+        dialog.setMinimumSize(400, 500)
 
-        chat_output = QTextEdit(chat_window)
+        chat_output = QTextEdit(dialog)
         chat_output.setReadOnly(True)
-        chat_output.setLineWrapMode(QTextEdit.NoWrap)
+        input_edit = QLineEdit(dialog)
+        send_btn = QPushButton("Send", dialog)
 
-        input_edit = QLineEdit(chat_window)
-        send_btn = QPushButton("✉️ Send", chat_window)
+        layout = QVBoxLayout(dialog)
+        layout.addWidget(chat_output)
+        layout.addWidget(input_edit)
+        layout.addWidget(send_btn)
 
         send_btn.clicked.connect(lambda: self.send_message(input_edit, chat_output))
-
-        layout = QVBoxLayout(chat_window)
-        layout.addWidget(chat_output, 1)
-        input_layout = QHBoxLayout()
-        input_layout.addWidget(input_edit, 1)
-        input_layout.addWidget(send_btn)
-        layout.addLayout(input_layout)
-
-        chat_window.exec_()
+        dialog.exec_()
 
     def send_message(self, input_edit, chat_output):
-        prompt = input_edit.text()
-        ai_response = self.generate_response(prompt)
+        user_message = input_edit.text().strip()
+        if not user_message:
+            return
 
-        self.apply_styles(chat_output, prompt, role="user")
-        self.apply_styles(chat_output, ai_response, role="bot")
-
+        chat_output.append(f"<b>You:</b> {user_message}")
         input_edit.clear()
 
-    def apply_styles(self, chat_output, message, role):
-        user_style = "color: #3498db;"
-        bot_style = "color: #2ecc71; font-size: 12px;"
-
-        message = markdown2.markdown(message)
-
-        message_style = user_style if role == "user" else bot_style
-
-        chat_output.append(f"<span style='{message_style}'>{message}</span>")
-
-    def generate_response(self, prompt):
-        response = client.chat.completions.create(  # Fixed method call
-            model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": prompt}]
-        )
-
-        return response.choices[0].message.content
-
+        try:
+            response = client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[{"role": "user", "content": user_message}]
+            )
+            ai_response = response.choices[0].message.content
+            chat_output.append(f"<b>AI:</b> {ai_response}")
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Failed to get AI response: {e}")
 
 if __name__ == "__main__":
     app = QApplication([])
     window = Synth()
     window.show()
     app.exec_()
-
